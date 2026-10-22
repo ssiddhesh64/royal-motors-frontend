@@ -8,7 +8,6 @@ function Hero() {
     <section className="relative isolate overflow-hidden bg-slate-950 text-white">
       <img
         src={drivingImg}
-        alt="A learner driver practising in a training car with an instructor"
         width="1536"
         height="1024"
         fetchPriority="high"
