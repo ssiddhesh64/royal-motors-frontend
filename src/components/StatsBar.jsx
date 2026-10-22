@@ -1,112 +1,26 @@
-import { useState, useEffect, useRef } from 'react';
-import { FaUsers, FaAward, FaCar, FaIdCard } from 'react-icons/fa';
+import {
+  FaCarSide,
+  FaMotorcycle,
+  FaFileAlt,
+  FaRegClipboard,
+} from 'react-icons/fa';
 
-const stats = [
-  {
-    icon: FaUsers,
-    value: 200000,
-    suffix: '+',
-    label: 'Students Trained',
-    display: '2L+',
-  },
-  {
-    icon: FaAward,
-    value: 35,
-    suffix: '+',
-    label: 'Years Experience',
-    display: '35+',
-  },
-  {
-    icon: FaCar,
-    value: 100,
-    suffix: '%',
-    label: 'Practical Training',
-    display: '100%',
-  },
-  {
-    icon: FaIdCard,
-    value: 0,
-    suffix: '',
-    label: 'Licence Process',
-    display: 'Fast',
-  },
+const offerings = [
+  { icon: <FaCarSide aria-hidden="true" />, label: 'Car training' },
+  { icon: <FaMotorcycle aria-hidden="true" />, label: 'Two-wheeler training' },
+  { icon: <FaFileAlt aria-hidden="true" />, label: 'Licence guidance' },
+  { icon: <FaRegClipboard aria-hidden="true" />, label: 'Theory mock test' },
 ];
 
-function useCountUp(target, duration = 1800, shouldAnimate = false) {
-  const [count, setCount] = useState(0);
-  const hasRun = useRef(false);
-
-  useEffect(() => {
-    if (!shouldAnimate || target === 0 || hasRun.current) return;
-    hasRun.current = true;
-    let start = 0;
-    const steps = duration / 16;
-    const increment = target / steps;
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [target, duration, shouldAnimate]);
-
-  return {
-    count,
-    started: count > 0 || (shouldAnimate && target === 0),
-  };
-}
-
-function StatItem({ stat, animate }) {
-  const { count, started } = useCountUp(stat.value, 1800, animate);
-
-  const formatValue = () => {
-    if (!started && !animate) return stat.display;
-    if (stat.value === 0) return stat.display;
-    if (stat.value >= 100000)
-      return `${Math.floor(count / 100000)}L${stat.suffix}`;
-    return `${count}${stat.suffix}`;
-  };
-
-  return (
-    <div className="flex items-center gap-4 md:gap-5 px-6 md:px-8 py-6">
-      <stat.icon className="text-2xl md:text-3xl shrink-0" />
-      <div>
-        <p className="text-2xl text-black md:text-3xl font-bold leading-none">
-          {formatValue()}
-        </p>
-        <p className="text-sm text-black md:text-base mt-0.5">{stat.label}</p>
-      </div>
-    </div>
-  );
-}
-
 function StatsBar() {
-  const [animate, setAnimate] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setAnimate(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section ref={ref} className="bg-gray-50 shadow-lg">
-      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-300">
-        {stats.map((stat) => (
-          <StatItem key={stat.label} stat={stat} animate={animate} />
+    <section className="border-b border-slate-200 bg-white" aria-label="Training options">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-slate-200 px-4 sm:px-6 md:grid-cols-4 md:divide-y-0 lg:px-8">
+        {offerings.map(({ icon, label }) => (
+          <div key={label} className="flex min-h-20 items-center justify-center gap-3 px-3 py-4 text-sm font-semibold text-slate-700">
+            <span className="shrink-0 text-lg text-blue-800">{icon}</span>
+            <span>{label}</span>
+          </div>
         ))}
       </div>
     </section>

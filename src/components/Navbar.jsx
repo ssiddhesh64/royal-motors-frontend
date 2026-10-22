@@ -1,140 +1,140 @@
+import { useEffect, useRef, useReducer } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { FaBars, FaTimes } from 'react-icons/fa';
 import RoyalLogo from './Royal';
+import { isNavigationMenuOpen, navigationMenuReducer } from '../utils/navigationMenu';
+
+const navigation = [
+  ['/', 'Home'],
+  ['/services', 'Services'],
+  ['/how-it-works', 'How It Works'],
+  ['/faq', 'FAQ'],
+  ['/documents', 'Documents'],
+  ['/gallery', 'Gallery'],
+  ['/contact', 'Contact'],
+  ['/mocktest', 'Mock Test'],
+];
 
 function Navbar() {
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpenPath, dispatchMenu] = useReducer(navigationMenuReducer, null);
+  const locationKeyRef = useRef(location.key);
+  const menuOpen = isNavigationMenuOpen(
+    menuOpenPath,
+    location.pathname,
+    location.key
+  );
+  const menuButtonRef = useRef(null);
+  const menuRef = useRef(null);
 
-  const renderLink = (path, label) => {
-    const isActive = location.pathname === path;
+  useEffect(() => {
+    if (!menuOpen) return undefined;
 
-    return (
-      <Link
-        to={path}
-        className={`group relative flex items-center h-full px-3 transition-all duration-300 ${
-          isActive
-            ? 'text-blue-600'
-            : 'text-gray-700 hover:text-blue-600 hover:-translate-y-0.5'
-        }`}
-      >
-        {label}
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    menuRef.current?.querySelector('a')?.focus();
 
-        {/* Premium underline */}
-        <span
-          className={`absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-500 ${
-            isActive
-              ? 'w-full left-0'
-              : 'w-0 left-1/2 group-hover:w-full group-hover:left-0'
-          }`}
-        ></span>
-      </Link>
-    );
-  };
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        dispatchMenu({ type: 'close' });
+        menuButtonRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (locationKeyRef.current !== location.key) {
+      locationKeyRef.current = location.key;
+      if (menuOpenPath) menuButtonRef.current?.focus();
+    }
+  }, [location.key, menuOpenPath]);
+
+  const renderLink = ([path, label]) => (
+    <Link
+      key={path}
+      to={path}
+      onClick={() => {
+        dispatchMenu({ type: 'close' });
+        menuButtonRef.current?.focus();
+      }}
+      aria-current={location.pathname === path ? 'page' : undefined}
+      className={`nav-link w-full justify-start lg:w-auto ${location.pathname === path ? 'nav-link-active' : ''}`}
+    >
+      {label}
+    </Link>
+  );
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200 px-3">
-      <div className="max-w-6xl flex items-center h-14">
-        {/* Logo */}
-        <Link to="/" className="text-lg font-bold text-gray-800 shrink-0">
-          <div className="flex items-center gap-2 text-gray-900 dark:text-white">
-            <RoyalLogo />
-          </div>
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur">
+      <nav
+        aria-label="Main navigation"
+        className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:px-6 lg:px-8"
+      >
+        <Link
+          to="/"
+          className="shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
+          aria-label="Royal Motor Training School home"
+        >
+          <RoyalLogo />
         </Link>
 
-        {/* Desktop Menu — centered */}
-        <div className="hidden md:flex flex-1 justify-center gap-1 text-xs font-medium items-center h-full">
-          {renderLink('/', 'Home')}
-          {renderLink('/services', 'Services')}
-          {renderLink('/how-it-works', 'How It Works')}
-          {renderLink('/faq', 'FAQ')}
-          {renderLink('/documents', 'Documents')}
-          {renderLink('/gallery', 'Gallery')}
-          {renderLink('/contact', 'Contact')}
-          {renderLink('/mocktest', 'Mock Test')}
+        <div className="hidden items-center gap-1 lg:flex">
+          {navigation.map(renderLink)}
         </div>
 
-        {/* Book Driving Lesson CTA */}
         <Link
           to="/contact"
-          className="hidden md:inline-flex shrink-0 items-center px-5 py-2 bg-blue-500 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-colors duration-300"
+          className="hidden shrink-0 rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-900 lg:inline-flex"
         >
-          Book Driving Lesson
+          Enquire Now
         </Link>
 
-        {/* Mobile Button */}
         <button
-          className="md:hidden ml-auto text-gray-800 text-2xl cursor-pointer"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle navigation menu"
+          ref={menuButtonRef}
+          type="button"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-slate-800 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 lg:hidden"
+          onClick={() =>
+            dispatchMenu({
+              type: 'toggle',
+              pathname: location.pathname,
+              locationKey: location.key,
+            })
+          }
+          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={menuOpen}
+          aria-controls="mobile-navigation"
         >
-          ☰
+          {menuOpen ? <FaTimes aria-hidden="true" /> : <FaBars aria-hidden="true" />}
         </button>
-      </div>
+      </nav>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-white px-6 py-4 space-y-4 border-t">
-          <Link
-            to="/"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
-          >
-            Home
-          </Link>
-          <Link
-            to="/services"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
-          >
-            Services
-          </Link>
-          <Link
-            to="/how-it-works"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
-          >
-            How It Works
-          </Link>
-          <Link
-            to="/documents"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
-          >
-            Documents
-          </Link>
-          <Link
-            to="/faq"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
-          >
-            FAQ
-          </Link>
-          <Link
-            to="/gallery"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
-          >
-            Gallery
-          </Link>
+      <div
+        id="mobile-navigation"
+        ref={menuRef}
+        hidden={!menuOpen}
+        className="absolute inset-x-0 top-full max-h-[calc(100svh-4rem)] overflow-y-auto border-b border-slate-200 bg-white px-5 py-4 shadow-xl lg:hidden"
+      >
+        <div className="mx-auto flex max-w-7xl flex-col gap-1">
+          {navigation.map(renderLink)}
           <Link
             to="/contact"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
+            onClick={() => {
+              dispatchMenu({ type: 'close' });
+              menuButtonRef.current?.focus();
+            }}
+            className="mt-3 inline-flex min-h-12 items-center justify-center rounded-xl bg-blue-500 px-5 font-semibold text-white hover:bg-blue-900"
           >
-            Contact
-          </Link>
-          <Link
-            to="/mocktest"
-            onClick={() => setMenuOpen(false)}
-            className="block text-gray-700"
-          >
-            Mock Test
+            Enquire Now
           </Link>
         </div>
-      )}
-    </nav>
+      </div>
+    </header>
   );
 }
 

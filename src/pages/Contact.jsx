@@ -7,12 +7,12 @@ import {
   FaClock,
 } from 'react-icons/fa';
 
-import { WHATSAPP_NUMBER } from '../constants/contact';
+import { PHONE_DISPLAY, PHONE_TEL, whatsappUrl } from '../constants/contact';
+import { validateEnquiryForm } from '../utils/contactForm';
 
 function Contact() {
   const [form, setForm] = useState({ name: '', phone: '', message: '' });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,35 +23,19 @@ function Contact() {
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
-  const validate = () => {
-    const newErrors = {};
-    if (!form.name.trim()) newErrors.name = 'Name is required';
-    if (!form.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!/^[6-9]\d{9}$/.test(form.phone)) {
-      newErrors.phone = 'Enter a valid 10-digit Indian mobile number';
-    }
-    return newErrors;
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validate();
+    const validationErrors = validateEnquiryForm(form);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    setLoading(true);
-    const text = `Name: ${form.name}%0APhone: ${form.phone}%0AMessage: ${form.message || 'No message'}`;
-
-    toast.success('Redirecting to WhatsApp...', { autoClose: 1500 });
-
-    setTimeout(() => {
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
-      setForm({ name: '', phone: '', message: '' });
-      setLoading(false);
-    }, 1500);
+    const text = `Name: ${form.name.trim()}\nPhone: ${form.phone}\nMessage: ${form.message.trim() || 'No message'}`;
+    window.open(whatsappUrl(text), '_blank', 'noopener,noreferrer');
+    toast.success('WhatsApp is opening with your enquiry. Send it there to contact us.', {
+      autoClose: 3500,
+    });
   };
 
   const contactDetails = [
@@ -70,8 +54,8 @@ function Contact() {
       icon: <FaPhoneAlt />,
       bg: 'bg-green-100 text-green-600',
       label: 'Phone',
-      lines: ['+91 90224 41860'],
-      href: 'tel:+919022441860',
+      lines: [PHONE_DISPLAY],
+      href: PHONE_TEL,
     },
     {
       icon: <FaClock />,
@@ -86,7 +70,7 @@ function Contact() {
       <div className="max-w-5xl mx-auto">
         {/* Section heading */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-800">Get in Touch</h2>
+          <h1 className="text-3xl font-bold text-gray-800">Get in Touch</h1>
           <p className="text-gray-500 mt-2 text-sm">
             We're here to help. Fill the form or reach us directly on WhatsApp.
           </p>
@@ -113,19 +97,21 @@ function Contact() {
                   id="name"
                   type="text"
                   name="name"
+                  autoComplete="name"
+                  required
                   placeholder="e.g. Rahul Sharma"
                   value={form.name}
                   onChange={handleChange}
-                  disabled={loading}
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={errors.name ? 'name-error' : undefined}
                   className={`w-full border px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 transition
-                    ${
-                      errors.name
-                        ? 'border-red-400 focus:ring-red-300 bg-red-50'
-                        : 'border-gray-200 focus:ring-blue-400 bg-white'
+                    ${errors.name
+                      ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                      : 'border-gray-200 focus:ring-blue-400 bg-white'
                     } disabled:opacity-60`}
                 />
                 {errors.name && (
-                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <p id="name-error" role="alert" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                     <span>⚠</span> {errors.name}
                   </p>
                 )}
@@ -147,22 +133,24 @@ function Contact() {
                     id="phone"
                     type="tel"
                     name="phone"
+                    autoComplete="tel-national"
+                    required
                     placeholder="9876543210"
                     value={form.phone}
                     onChange={handleChange}
-                    disabled={loading}
                     maxLength={10}
                     inputMode="numeric"
+                    aria-invalid={Boolean(errors.phone)}
+                    aria-describedby={errors.phone ? 'phone-error' : undefined}
                     className={`w-full border pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 transition
-                      ${
-                        errors.phone
-                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
-                          : 'border-gray-200 focus:ring-blue-400 bg-white'
+                      ${errors.phone
+                        ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                        : 'border-gray-200 focus:ring-blue-400 bg-white'
                       } disabled:opacity-60`}
                   />
                 </div>
                 {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <p id="phone-error" role="alert" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                     <span>⚠</span> {errors.phone}
                   </p>
                 )}
@@ -182,9 +170,9 @@ function Contact() {
                   name="message"
                   placeholder="Any specific enquiry..."
                   rows={4}
+                  maxLength={1000}
                   value={form.message}
                   onChange={handleChange}
-                  disabled={loading}
                   className="w-full border border-gray-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none transition disabled:opacity-60"
                 />
               </div>
@@ -192,36 +180,9 @@ function Contact() {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 active:scale-[0.98] transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-900 active:scale-[0.98] transition flex items-center justify-center gap-2"
               >
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8z"
-                      />
-                    </svg>
-                    Sending...
-                  </>
-                ) : (
-                  'Send Message'
-                )}
+                Continue to WhatsApp
               </button>
             </form>
           </div>
@@ -287,9 +248,7 @@ function Contact() {
             {/* WhatsApp CTA — pinned to bottom of card */}
             <button
               className="mt-8 w-full flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 active:scale-[0.98] transition duration-200"
-              onClick={() =>
-                window.open(`https://wa.me/${WHATSAPP_NUMBER}`, '_blank')
-              }
+              onClick={() => window.open(whatsappUrl(), '_blank', 'noopener,noreferrer')}
             >
               <FaWhatsapp className="text-xl" />
               Chat on WhatsApp

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ssiddhesh64.github.io/royal-motors-frontend/sitemap.xml

@@ -19,6 +19,12 @@ function App() {
   useDocumentTitle();
   return (
     <>
+      <a
+        href="#main-content"
+        className="sr-only z-[60] rounded-lg bg-white px-4 py-3 font-semibold text-blue-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Skip to main content
+      </a>
       <ScrollToTop />
       <ToastContainer
         position="top-right"
@@ -30,16 +36,18 @@ function App() {
         theme="colored"
       />
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/gallery" element={<Gallery />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/documents" element={<DocumentChecklist />} />
-        <Route path="/mocktest" element={<MockTest />} />
-      </Routes>
+      <main id="main-content" tabIndex="-1" className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/services" element={<Services isPage />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/documents" element={<DocumentChecklist />} />
+          <Route path="/mocktest" element={<MockTest />} />
+        </Routes>
+      </main>
       <Footer />
       <FloatingWhatsApp />
     </>

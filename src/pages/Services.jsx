@@ -1,44 +1,37 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { FaArrowRight } from 'react-icons/fa';
 import services from '../data/servicesData';
 import { whatsappUrl } from '../constants/contact';
 
 const ServiceCard = React.memo(({ service }) => (
   <div
-    className="bg-gray-50 rounded-xl p-6 shadow-md hover:shadow-xl transition duration-300 hover:-translate-y-1"
-    role="article"
+    className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg"
     aria-labelledby={`service-${service.id}-title`}
   >
-    <h3
-      id={`service-${service.id}-title`}
-      className="text-xl font-semibold text-gray-800 py-4"
-    >
+    <h3 id={`service-${service.id}-title`} className="text-xl font-bold text-slate-900">
       {service.name}
     </h3>
 
-    <div className="mt-2 text-gray-600 px-4">{service.desc}</div>
+    <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">{service.desc}</p>
 
-    <div
-      className="mt-4 font-bold text-blue-600"
-      aria-label={`Price: ${service.price}`}
-    >
-      {service.price}
+    <div className="mt-6 flex items-end justify-between gap-4 border-t border-slate-100 pt-5">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Listed fee</p>
+        <p className="mt-1 text-2xl font-bold text-blue-900" aria-label={`Listed fee: ${service.price}`}>
+          {service.price}
+        </p>
+      </div>
+      <a
+        className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+        aria-label={`Enquire about ${service.name} on WhatsApp`}
+        href={whatsappUrl(`Hi Royal Motor Training School, I would like to enquire about ${service.name}.`)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Enquire <FaArrowRight aria-hidden="true" />
+      </a>
     </div>
-
-    <button
-      className="text-blue-600 font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 py-4 cursor-pointer"
-      aria-label={`Enquire about ${service.name}`}
-      onClick={() =>
-        window.open(
-          whatsappUrl(
-            `Hi Royal Motor Driving School, I would like to enquire about your service: ${service.name}.`
-          ),
-          '_blank'
-        )
-      }
-    >
-      Enquire Now →
-    </button>
   </div>
 ));
 
@@ -51,28 +44,24 @@ ServiceCard.propTypes = {
   }).isRequired,
 };
 
-function Services() {
+function Services({ isPage = false }) {
+  const Heading = isPage ? 'h1' : 'h2';
+
   return (
     <section className="py-10 px-6 bg-white" aria-labelledby="services-heading">
-      <div className="max-w-6xl mx-auto">
-        {/* Heading */}
-        <h2
-          id="services-heading"
-          className="text-8xl md:text-4xl font-bold text-center text-gray-800"
-          style={{ fontSize: '2.5rem', fontWeight: 800 }}
-        >
-          Our Services
-        </h2>
-
-        <div
-          className="text-center text-gray-600 mt-3"
-          style={{ fontSize: '1.2rem', fontWeight: 500 }}
-        >
-          Choose the right training program and start your driving journey today
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-blue-800">Training and support</p>
+          <Heading id="services-heading" className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            Our Services
+          </Heading>
+          <p className="mt-3 text-base leading-relaxed text-slate-600">
+            Choose a training or support service and contact us to confirm current fees and availability.
+          </p>
         </div>
 
         {/* Grid */}
-        <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
@@ -81,5 +70,9 @@ function Services() {
     </section>
   );
 }
+
+Services.propTypes = {
+  isPage: PropTypes.bool,
+};
 
 export default Services;

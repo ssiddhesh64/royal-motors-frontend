@@ -1,12 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import gallery from '../data/gallery';
 import RoadSignsUI from '../components/RoadSignsUI';
 
 function Gallery() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const triggerRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const dialogRef = useRef(null);
+  const wasOpenRef = useRef(false);
 
-  const openSlider = (group, index) => {
+  const openSlider = (group, index, trigger) => {
+    triggerRef.current = trigger;
     setSelectedGroup(group);
     setCurrentIndex(index);
   };
@@ -32,39 +37,72 @@ function Gallery() {
 
   useEffect(() => {
     if (!selectedGroup) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') closeSlider();
       if (e.key === 'ArrowRight') nextImage();
       if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'Tab') {
+        const buttons = dialogRef.current?.querySelectorAll('button:not([disabled])');
+        if (!buttons?.length) return;
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedGroup, closeSlider, nextImage, prevImage]);
 
+  useEffect(() => {
+    if (selectedGroup) {
+      wasOpenRef.current = true;
+      return;
+    }
+    if (wasOpenRef.current) {
+      wasOpenRef.current = false;
+      triggerRef.current?.focus();
+    }
+  }, [selectedGroup]);
+
   return (
     <section className="py-16 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-center">Gallery</h2>
+        <h1 className="text-3xl font-bold text-center">Gallery</h1>
         <RoadSignsUI />
         {/* GROUPS */}
-        {gallery.map((group, gIndex) => (
-          <div key={gIndex} className="mt-10">
+        {gallery.map((group) => (
+          <div key={group.group} className="mt-10">
             <h3 className="text-xl font-semibold mb-4">{group.group}</h3>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {group.images.map((img, index) => (
-                <div
-                  key={index}
-                  className="break-inside-avoid overflow-hidden rounded-xl shadow-md"
-                >
+                <div key={`${group.group}-${index}`} className="overflow-hidden rounded-xl shadow-md">
+                  <button
+                    type="button"
+                    className="block w-full overflow-hidden focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
+                    aria-label={`View ${group.group.toLowerCase()} photo ${index + 1}`}
+                    onClick={(event) => openSlider(group, index, event.currentTarget)}
+                  >
                   <img
                     src={img}
                     alt=""
-                    onClick={() => openSlider(group, index)}
-                    className="w-full aspect-[4/3] object-cover cursor-pointer hover:scale-105 transition duration-300"
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover transition duration-300 hover:scale-105"
                   />
+                  </button>
                 </div>
               ))}
             </div>
@@ -80,9 +118,11 @@ function Gallery() {
             className="fixed inset-0 bg-black/85 flex items-center justify-center z-50"
             role="dialog"
             aria-modal="true"
-            aria-label="Image lightbox"
+            aria-label={`${selectedGroup.group} photo viewer`}
+            ref={dialogRef}
           >
             <button
+              ref={closeButtonRef}
               onClick={closeSlider}
               className="absolute top-5 right-5 text-white text-3xl cursor-pointer hover:text-gray-300 transition"
               aria-label="Close lightbox"

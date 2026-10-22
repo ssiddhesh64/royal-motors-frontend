@@ -1,16 +1,16 @@
 import { Link } from 'react-router-dom';
 import RoyalLogo from '../components/Royal';
+import { PHONE_DISPLAY, PHONE_TEL, whatsappUrl } from '../constants/contact';
 
 function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 px-6 py-10 mt-10">
+    <footer className="mt-0 bg-slate-950 px-6 py-12 text-slate-300">
       <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
         {/* BRAND */}
         <div>
           <RoyalLogo darkText="#FFFFFF" />
-          <p className="mt-3 text-sm text-gray-400">
-            Royal Motor Training School has been helping students become
-            confident drivers since 1989.
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
+            Driving lessons and learner licence guidance in Malad East, Mumbai.
           </p>
         </div>
 
@@ -92,15 +92,25 @@ function Footer() {
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Contact</h3>
 
-          <p className="text-sm">📍 Maharashtra</p>
-          <p className="text-sm mt-2">📞 +91 9022441860</p>
+          <p className="text-sm leading-relaxed">
+            Sheetal Dwar Bldg, Shivaji Chowk,
+            <br />
+            Daftary Road, Malad East,
+            <br />
+            Mumbai – 400097
+          </p>
+          <a className="mt-3 inline-block text-sm hover:text-white" href={PHONE_TEL}>
+            {PHONE_DISPLAY}
+          </a>
 
-          <button
-            className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-            onClick={() => window.open('https://wa.me/919022441860')}
+          <a
+            href={whatsappUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-green-700 px-4 py-2 font-semibold text-white transition hover:bg-green-600"
           >
             WhatsApp Us
-          </button>
+          </a>
         </div>
       </div>
 

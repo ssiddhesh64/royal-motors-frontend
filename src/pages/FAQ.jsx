@@ -1,16 +1,9 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import ContentCta from '../components/ContentCta';
 import faqCategories from '../data/faqData';
 
 function FAQ() {
-  const [openKey, setOpenKey] = useState(null);
-
-  const toggle = (key) => {
-    setOpenKey((prev) => (prev === key ? null : key));
-  };
-
   return (
     <section className="bg-gray-50 py-16 px-6 min-h-screen">
       <div className="max-w-3xl mx-auto">
@@ -26,36 +19,26 @@ function FAQ() {
                 {section.category}
               </h2>
               <div className="space-y-2">
-                {section.items.map((item, index) => {
-                  const key = `${section.category}-${index}`;
-                  const isOpen = openKey === key;
-                  return (
-                    <div
-                      key={key}
-                      className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggle(key)}
-                        className="w-full text-left px-5 py-4 flex justify-between gap-4 items-start font-medium text-gray-800 hover:bg-gray-50 transition"
-                        aria-expanded={isOpen}
+                {section.items.map((item) => (
+                  <details
+                    key={item.question}
+                    name={`faq-${section.category}`}
+                    className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
+                  >
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-5 py-4 font-medium text-gray-800 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-700 [&::-webkit-details-marker]:hidden">
+                      <span>{item.question}</span>
+                      <span
+                        className="flex-shrink-0 text-xl leading-none text-blue-700 group-open:rotate-45"
+                        aria-hidden="true"
                       >
-                        <span>{item.question}</span>
-                        <span
-                          className="text-blue-600 flex-shrink-0 text-xl leading-none"
-                          aria-hidden
-                        >
-                          {isOpen ? '−' : '+'}
-                        </span>
-                      </button>
-                      {isOpen && (
-                        <p className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-50 pt-3">
-                          {item.answer}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+                        +
+                      </span>
+                    </summary>
+                    <p className="border-t border-gray-100 px-5 pb-4 pt-3 text-sm leading-relaxed text-gray-600">
+                      {item.answer}
+                    </p>
+                  </details>
+                ))}
               </div>
             </div>
           ))}
